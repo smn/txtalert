@@ -97,6 +97,13 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
+    'celery'
 )
+
+AMQP_SERVER = "localhost"
+AMQP_PORT = 5672
+AMQP_USER = ""
+AMQP_PASSWORD = ""
+AMQP_VHOST = ""
 
 from local_settings import *

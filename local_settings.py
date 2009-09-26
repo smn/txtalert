@@ -21,3 +21,9 @@ DATABASE_NAME = 'txtalert_dev'
 DATABASE_USER = ''
 DATABASE_PASSWORD = ''
 DATABASE_PORT = ''
+
+AMQP_SERVER = "localhost"
+AMQP_PORT = 5672
+AMQP_USER = "sdehaan"
+AMQP_PASSWORD = "sdehaan"
+AMQP_VHOST = "mbp"
