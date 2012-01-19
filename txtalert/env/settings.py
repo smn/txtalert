@@ -20,6 +20,11 @@ import sys
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
+from raven import Client
+from raven.conf import setup_logging
+from raven.handlers.logging import SentryHandler
+
+
 APP_ROOT = os.getcwd()
 PROJECT_NAME = os.path.basename(APP_ROOT)
 
@@ -114,6 +119,7 @@ INSTALLED_APPS = (
     'txtalert.apps.api',
     'txtalert.apps.cd4',
     'txtalert.apps.googledoc',
+    'txtalert.apps.pmtct',
     'piston',
     'dirtyfields',
     'history',
