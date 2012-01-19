@@ -11,4 +11,6 @@ south
 gunicorn
 supervisor
 django-geckoboard
+raven
+suds
 -e git+git://github.com/smn/vumi-client.git#egg=vumi-client
