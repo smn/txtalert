@@ -24,7 +24,6 @@ from raven import Client
 from raven.conf import setup_logging
 from raven.handlers.logging import SentryHandler
 
-
 APP_ROOT = os.getcwd()
 PROJECT_NAME = os.path.basename(APP_ROOT)
 
