@@ -73,9 +73,29 @@ class Importer(object):
         self.client.set_options(service='Service1', port="Service1Soap")
 
     @proxy_wrapper
-    def _call_method(self, method, site_code, new=True):
-        response = getattr(self.client.service, method)(crit='criteNEW' if new else 'critALL', siteCode=site_code)
-        return self._dictify_data(response['DataRoot']['Data'])
+    def _call_method(self, method, site_code=None, new=True):
+        """
+        Returns dictified result for method call.
+        Returns combined results for all site codes if no site code provided.
+        With new=True return only new entries since last run.
+        With new=False returns all entries.
+        """
+        SITE_CODES = [
+            'EDH',
+            'MSH',
+        ]
+
+        if not site_code:
+            result = []
+            for site_code in SITE_CODES:
+                response = getattr(self.client.service, method)(crit='critNEW' if new else 'critALL', siteCode=site_code)
+                result += self._dictify_data(response['DataRoot']['Data'])
+        else:
+            response = getattr(self.client.service, method)(crit='critNEW' if new else 'critALL', siteCode=site_code)
+            result = self._dictify_data(response['DataRoot']['Data'])
+
+        return result
+
 
     def get_delivery_triggers(self, site_code, new=True):
         """
@@ -88,12 +108,12 @@ class Importer(object):
             new=new
         )
     
-    def get_enrolled_patients(self, site_code, new=True):
+    def get_enrolled_patients(self, site_code=None, new=True):
         """
         Returns all enrolled patients or only those enrolled
         since last run(new).
         """
-        data = self._call_method(
+        return self._call_method(
             method='I_PatientEnrollment', 
             site_code=site_code,
             new=new
@@ -120,3 +140,6 @@ class Importer(object):
             site_code=site_code,
             new=new
         )
+
+    def update_patients(self):
+        patients = self.get_enrolled_patients(new=False)
