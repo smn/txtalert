@@ -21,4 +21,5 @@ class Command(BaseCommand):
             verbose=settings.DEBUG,
         )
 
-        importer.get_enrolled_patients(site_code="EDH")
+        #importer.get_enrolled_patients(site_code="EDH")
+        importer.update_patients()
