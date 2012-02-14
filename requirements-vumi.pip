@@ -1,0 +1,2 @@
+-e git+git://github.com/praekelt/vumi.git@develop#egg=vumi
+-e git+git://github.com/praekelt/vxpolls.git@develop#egg=vxpolls

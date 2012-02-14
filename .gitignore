@@ -19,3 +19,4 @@ tmp/coverage/*
 ve/
 webroot/media/upload/*
 widget.wgt
+/_trial_temp/
