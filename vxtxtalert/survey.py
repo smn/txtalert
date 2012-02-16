@@ -34,41 +34,36 @@ class SurveyApplication(ApplicationWorker):
         self.pm.stop()
 
     def consume_user_message(self, message):
-        user_id = message.user()
-        content = (message['content'] or '').strip()
-        # keep the audit trail
-        participant = self.pm.get_participant(user_id)
-        participant.add_received_message(message)
-        participant.continue_session = True
-
-        last_question = self.pm.get_last_question(participant)
-        if last_question and not content:
-            print '1'
-            reply = self.ask_question(participant, last_question)
-        elif last_question and content:
-            print '2'
-            error_reply = self.answer_question(participant,
-                                            last_question, content)
-            if error_reply:
-                reply = error_reply
-            else:
-                next_question = self.pm.get_next_question(participant)
-                reply = self.ask_question(participant, next_question)
+        content = message['content']
+        participant = self.pm.get_participant(message.user())
+        if participant.has_unanswered_question and content:
+            self.on_message(participant, message)
+        elif participant.has_unanswered_question and not content:
+            self.resume_session(participant, message)
         else:
-            print '3'
+            self.init_session(participant, message)
+
+    def on_message(self, participant, message):
+        # receive a message as part of a live session
+        last_question = self.pm.get_last_question(participant)
+        error_message = self.pm.submit_answer(participant, message['content'])
+        if error_message:
+            self.reply_to(message, error_message)
+        else:
             next_question = self.pm.get_next_question(participant)
-            reply = self.ask_question(participant, next_question)
+            self.reply_to(message, next_question.copy)
+            self.pm.set_last_question(participant, next_question)
+            self.pm.save_participant(participant)
 
-        print participant.dump()
-        self.pm.save_participant(participant)
-        continue_session = self.pm.has_more_questions_for(participant)
-        self.reply_to(message, reply, continue_session=continue_session)
-
-
-    def ask_question(self, participant, question):
-        self.pm.set_last_question(participant, question)
+    def init_session(self, participant, message):
+        # brand new session
+        first_question = self.pm.get_next_question(participant)
+        self.reply_to(message, first_question.copy)
         participant.has_unanswered_question = True
-        return question.copy
+        self.pm.set_last_question(participant, first_question)
+        self.pm.save_participant(participant)
 
-    def answer_question(self, participant, question, answer):
-        return self.pm.submit_answer(participant, answer)
+    def resume_session(self, participant, message):
+        # restart of an aborted session
+        pass
+
