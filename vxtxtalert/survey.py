@@ -12,8 +12,9 @@ from vxpolls.manager import PollManager
 
 class SurveyApplication(ApplicationWorker):
 
-    batch_completed_response = 'You have completed the first 5 questions, '\
-                                'dial in again to complete the survey.'
+    batch_completed_response = 'You have completed the first batch of '\
+                                'questions, dial in again to complete '\
+                                'the full survey.'
     survey_completed_response = 'You have completed the survey'
 
     def validate_config(self):
@@ -34,36 +35,48 @@ class SurveyApplication(ApplicationWorker):
         self.pm.stop()
 
     def consume_user_message(self, message):
-        content = message['content']
         participant = self.pm.get_participant(message.user())
-        if participant.has_unanswered_question and content:
+        if participant.has_unanswered_question:
             self.on_message(participant, message)
-        elif participant.has_unanswered_question and not content:
-            self.resume_session(participant, message)
         else:
             self.init_session(participant, message)
 
     def on_message(self, participant, message):
         # receive a message as part of a live session
+        content = message['content']
         last_question = self.pm.get_last_question(participant)
-        error_message = self.pm.submit_answer(participant, message['content'])
+        error_message = self.pm.submit_answer(participant, content)
         if error_message:
             self.reply_to(message, error_message)
         else:
-            next_question = self.pm.get_next_question(participant)
-            self.reply_to(message, next_question.copy)
-            self.pm.set_last_question(participant, next_question)
-            self.pm.save_participant(participant)
+            if self.pm.has_more_questions_for(participant):
+                next_question = self.pm.get_next_question(participant)
+                self.reply_to(message, self.ask_question(participant, next_question))
+            else:
+                self.end_session(participant, message)
+
+    def end_session(self, participant, message):
+        participant.interactions = 0
+        participant.has_unanswered_question = False
+        next_question = self.pm.get_next_question(participant)
+        if next_question:
+            self.reply_to(message, self.batch_completed_response,
+                continue_session=False)
+        else:
+            self.reply_to(message, self.survey_completed_response,
+                continue_session=False)
+        self.pm.save_participant(participant)
 
     def init_session(self, participant, message):
         # brand new session
-        first_question = self.pm.get_next_question(participant)
-        self.reply_to(message, first_question.copy)
+        if self.pm.has_more_questions_for(participant):
+            next_question = self.pm.get_next_question(participant)
+            self.reply_to(message, self.ask_question(participant, next_question))
+        else:
+            self.end_session(participant, message)
+
+    def ask_question(self, participant, question):
         participant.has_unanswered_question = True
-        self.pm.set_last_question(participant, first_question)
+        self.pm.set_last_question(participant, question)
         self.pm.save_participant(participant)
-
-    def resume_session(self, participant, message):
-        # restart of an aborted session
-        pass
-
+        return question.copy

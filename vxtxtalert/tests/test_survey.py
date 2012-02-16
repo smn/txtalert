@@ -28,6 +28,7 @@ class SurveyTestCase(ApplicationTestCase):
         self.config = {
             'questions': self.default_questions,
             'transport_name': self.transport_name,
+            'batch_size': 2
         }
         self.app = yield self.get_application(self.config)
         self.pm = self.app.pm
@@ -69,3 +70,75 @@ class SurveyTestCase(ApplicationTestCase):
         self.assertResponse(response, self.default_questions[1]['copy'])
         self.assertEvent(response, None)
 
+    @inlineCallbacks
+    def test_end_of_session(self):
+        # create the inbound message
+        msg = self.mkmsg_in(content='apple')
+        # prime the participant
+        participant = self.pm.get_participant(msg.user())
+        participant.has_unanswered_question = True
+        participant.last_question_index = 2
+        self.pm.save_participant(participant)
+        # send to the app
+        yield self.dispatch(msg)
+        [response] = self.get_dispatched_messages()
+        self.assertResponse(response, self.app.survey_completed_response)
+        self.assertEvent(response, 'close')
+
+    @inlineCallbacks
+    def test_resume_aborted_session(self):
+        # create the inbound init message
+        msg = self.mkmsg_in(content=None)
+        # prime the participant
+        participant = self.pm.get_participant(msg.user())
+        participant.has_unanswered_question = True
+        participant.last_question_index = 1
+        self.pm.save_participant(participant)
+        # send to app
+        yield self.dispatch(msg)
+        [response] = self.get_dispatched_messages()
+        # check that we get re-asked the original question that
+        # we were expecting an answer for when the session aborted
+        self.assertResponse(response, self.default_questions[1]['copy'])
+        self.assertEvent(response, None)
+
+    @inlineCallbacks
+    def test_batching_session(self):
+        msg = self.mkmsg_in(content='orange')
+        # prime the participant
+        participant = self.pm.get_participant(msg.user())
+        participant.has_unanswered_question = True
+        participant.interactions = 1
+        participant.last_question_index = 1
+        self.pm.save_participant(participant)
+        # send to app
+        yield self.dispatch(msg)
+        [response] = self.get_dispatched_messages()
+        # check we get the batch ended response and session is closed
+        self.assertResponse(response, self.app.batch_completed_response)
+        self.assertEvent(response, 'close')
+
+        # dial in again
+        msg = self.mkmsg_in(content=None)
+        yield self.dispatch(msg)
+        last_response = self.get_dispatched_messages()[-1]
+        self.assertResponse(last_response, self.default_questions[2]['copy'])
+        self.assertEvent(last_response, None)
+
+        msg = self.mkmsg_in(content='orange')
+        yield self.dispatch(msg)
+        last_response = self.get_dispatched_messages()[-1]
+        self.assertResponse(last_response, self.app.survey_completed_response)
+        self.assertEvent(last_response, 'close')
+
+    @inlineCallbacks
+    def test_initial_connect_after_completion(self):
+        msg = self.mkmsg_in(content=None)
+        participant = self.pm.get_participant(msg.user())
+        participant.has_unanswered_question = False
+        participant.last_question_index = 2
+        self.pm.save_participant(participant)
+        yield self.dispatch(msg)
+        [response] = self.get_dispatched_messages()
+        self.assertResponse(response, self.app.survey_completed_response)
+        self.assertEvent(response, 'close')
