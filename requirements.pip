@@ -13,4 +13,5 @@ supervisor
 django-geckoboard
 raven
 suds
+-e ./src/txtalert-pmtct
 -e git+git://github.com/smn/vumi-client.git#egg=vumi-client
