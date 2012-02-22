@@ -118,7 +118,7 @@ INSTALLED_APPS = (
     'txtalert.apps.api',
     'txtalert.apps.cd4',
     'txtalert.apps.googledoc',
-    'txtalert.apps.pmtct',
+    'pmtct',
     'piston',
     'dirtyfields',
     'history',
@@ -134,6 +134,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.flatpages',
     'django.contrib.markup',
+    'reversion',
 )
 
 SMS_GATEWAY_CLASS = 'txtalert.apps.gateway.backends.vumi'
