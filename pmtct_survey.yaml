@@ -1,0 +1,83 @@
+transport_name: pmtct_transport
+dashboard_port: 8101
+dashboard_path_prefix: 'dashboard/'
+# batch_size: 5
+poll_id: 'poll-1'
+questions:
+  - copy: "Welcome to the PMTCT Project in KZN. We'd like to know more about you.\
+      \  Please answer a few questions. (Cost 20c/20sec)\n1. Ok"
+    valid_responses: ['1']
+  - copy: 'What number child is this for you?
+
+      1. First
+
+      2. Second
+
+      3. Third
+
+      4. Forth
+
+      5. Fifth or more'
+    valid_responses: ['1', '2', '3', '4', '5']
+  - copy: 'At what stages should a pregnant women go to the clinic?
+
+      1. As soon as menstrual period is missed
+
+      2. Before 3 months pregnant
+
+      3. Between 3 - 4 months
+
+      4. Between 5 - 6 months
+
+      5. 6 months or more'
+    valid_responses: ['1', '2', '3', '4', '5']
+  - copy: "Is it important to practice safer sex options, like using a condom, when\
+      \ you're pregnant?\n1. Yes\n2. No"
+    valid_responses: ['1', '2']
+  - copy: "Why do women go 2 the clinic when halfway through their pregnancy?\n1. They\
+      \ dont know they should go early\n2. They wait until there's a crisis before\
+      \ going\n3. Taxis are expensive"
+    valid_responses: ['1', '2', '3']
+  - copy: 'Should all mothers be tested for HIV during their pregnancy?
+
+      1. Yes
+
+      2. No'
+    valid_responses: ['1', '2']
+  - copy: 'If a mother tests HIV negative during pregnancy, does she need to get tested
+      again at some point?
+
+      1. Yes
+
+      2. No'
+    valid_responses: ['1', '2']
+  - copy: 'When should a woman have a post natal check up after delivery?
+
+      1. Within the first 6 days
+
+      2. Within 15 days
+
+      3. Within 1 month
+
+      4. Within 2 months'
+    valid_responses: ['1', '2', '3', '4']
+  - copy: 'What does "exclusive breastfeeding" mean?
+
+      1. Means I can give milk & water
+
+      2. Means I can only give breast milk
+
+      3. Means I can give breast & formula
+
+      4. Means I can add pap if baby is hungry'
+    valid_responses: ['1', '2', '3', '4']
+  - copy: 'What is the time period for which a baby must receive exclusive breastfeeding?
+
+      1. 1 month
+
+      2. 2 months
+
+      3. 6 months
+
+      4. 1 year'
+    valid_responses: ['1', '2', '3', '4']
