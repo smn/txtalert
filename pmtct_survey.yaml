@@ -4,7 +4,7 @@ dashboard_path_prefix: 'dashboard/'
 # batch_size: 5
 poll_id: 'poll-1'
 questions:
-  - copy: "Welcome to the PMTCT Project in KZN. We'd like to know more about you.\
+  - copy: "Welcome to the Mom Connect Project in KZN. We'd like to know more about you.\
       \  Please answer a few questions. (Cost 20c/20sec)\n1. Ok"
     valid_responses: ['1']
   - copy: 'What number child is this for you?
