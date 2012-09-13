@@ -290,6 +290,8 @@ class SimpleCRUD:
         if isinstance(feed, gdata.spreadsheet.SpreadsheetsListFeed):
             worksheet_data = {}
             proper_worksheet = {}
+            extra_rows = []
+            extra_rows_start_after = 0
             temp_dic = {}
             rowdic = {}
             copydic = {}
@@ -316,14 +318,44 @@ class SimpleCRUD:
                 row_no = k + 2
                 #get proper values for each key in row dictionary
                 enrol_p = self.database_record(dic=worksheet_data[k])
+
+                # For cases where there are multiple file numbers joined by
+                # a '/' we split and clean (strip) the file numbers,
+                # substitute back the first one in the list,
+                # and build up a list of duplicate/extra rows using the other
+                # file numbers
+                filenos = [x.strip() for x in enrol_p['fileno'].split('/')]
+                if len(filenos) > 1:
+                    print "\n", enrol_p, filenos
+                    enrol_p['fileno'] = filenos.pop(0)
+                    print "\t", enrol_p
+                    while len(filenos) > 0:
+                        new_enrol_p = {}
+                        new_enrol_p.update(enrol_p)
+                        new_enrol_p['fileno'] = filenos.pop(0)
+                        print "\t", new_enrol_p
+                        extra_rows.append(new_enrol_p)
+
+
                 #store row as value an row number as the key
                 enroltemp = {row_no: enrol_p}
                 #clear for next row excess
                 enrol_p = {}
                 #dictionary that stores a row number as a key to the row data
                 proper_worksheet.update(enroltemp)
+                extra_rows_start_after = row_no
                 enroltemp = {}
                 row_no = 0
+            print "ROWS", len(proper_worksheet)
+            print "extra_rows_start_after", extra_rows_start_after
+            if extra_rows_start_after > 0:
+                while len(extra_rows):
+                    extra_rows_start_after +=1
+                    extra_temp = {extra_rows_start_after: extra_rows.pop(0)}
+                    print extra_temp
+                    proper_worksheet.update(extra_temp)
+            print "ROWS", len(proper_worksheet)
+
             return proper_worksheet
 
     def date_object_creator(self, datestring):
